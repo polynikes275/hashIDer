@@ -1,0 +1,189 @@
+#!/bin/bash
+
+# Author: Jason Brewer
+# A bash program that looks up the hashes most used in forensics (along with a few additional ones) within a file
+# or returns a cryptographic hashing algorithm given a hash.
+
+# First argument is either a file containing hashes or a hash itself
+FILE_or_HASH=$1
+
+# Hashing algorithms 
+OPTS="-md5, -sha1, -sha224, -sha256, -sha384, -sha512"
+
+# Usage function
+function usage()
+{
+	local script=$(basename $0)
+	cat <<EOF
+
+Description: Find all hashes of specific type within a file or return hashing algorithm provided a hash to interpret
+
+Usage for hash lookup: $script file $OPTS
+
+Usage for hash identifier: $script hash
+
+EOF
+	exit 1
+}
+
+# Return md5 hashes, if found within file
+function md5Finder()
+{
+	egrep -ow "[a-f0-9]{32}" $FILE_or_HASH
+	if (( $? != 0 ))
+	then 
+		echo -e "\n[-] No md5 hashes found within $FILE_or_HASH [-]\n"
+		exit
+	fi
+}
+
+# Return sha1 hashes, if found within file
+function sha1Finder()
+{
+	egrep -ow "[a-f0-9]{40}" $FILE_or_HASH
+	if (( $? != 0 ))
+	then 
+		echo -e "\n[-] No sha1 hashes found within $FILE_or_HASH [-]\n"
+		exit
+	fi
+
+}
+
+# This function works for sha224 and the newer sha3_224 because the length is the same
+function sha224Finder()
+{
+	egrep -ow "[a-f0-9]{56}" $FILE_or_HASH
+	if (( $? != 0 ))
+	then 
+		echo -e "\n[-] No sha224 or sha3_224 hashes found within $FILE_or_HASH [-]\n"
+		exit
+	fi
+
+}
+
+# This function works for sha256 and the newer sha3_256 because the length is the same
+function sha256Finder()
+{
+	egrep -ow "[a-f0-9]{64}" $FILE_or_HASH
+	if (( $? != 0 ))
+	then 
+		echo -e "\n[-] No sha256 or sha3_256 hashes found within $FILE_or_HASH [-]\n"
+		exit
+	fi
+
+}
+
+# This function works for sha384 and the newer sha3_384 because the length is the same
+function sha384Finder()
+{
+	egrep -ow "[a-f0-9]{96}" $FILE_or_HASH
+	if (( $? != 0 ))
+	then 
+		echo -e "\n[-] No sha384 or sha3_384 hashes found within $FILE_or_HASH [-]\n"
+		exit
+	fi
+
+}
+
+# This function works for sha512 and the newer sha3_512 because the length is the same
+function sha512Finder()
+{
+	egrep -ow "[a-f0-9]{128}" $FILE_or_HASH
+	if (( $? != 0 ))
+	then 
+		echo -e "\n[-] No sha512 or sha3_512 hashes found within $FILE_or_HASH [-]\n"
+		exit
+	fi
+
+}
+
+# Lookup hashes based on known byte length
+function hashLookup()
+{
+	LENGTH=$(echo $FILE_or_HASH | wc -c)
+	if (( $LENGTH-1 == 32 ))
+	then
+		echo -e "\n[+] User supplied a md5 hash [+]\n"
+		exit
+	elif (( $LENGTH-1 == 40 ))
+	then 
+		echo -e "\n[+} User suuplied a sha1 hash [+]\n"
+		exit
+	elif (( $LENGTH-1 == 56 ))
+	then
+		echo -e "\n[+] User supplied a sha224 or the new sha3_224 hash [+]\n"
+		exit
+	elif (( $LENGTH-1 == 64 ))
+	then
+		echo -e "\n[+] User supplied a sha256 or the new sha3_256 hash [+]\n"
+		exit
+	elif (( $LENGTH-1 == 96 ))
+	then
+		echo -e "\n[+] User supplied a sha384 or the new sha3_384 hash [+]\n"
+		exit
+	elif (( $LENGTH-1 == 128 ))
+	then
+		echo -e "\n[+] User supplied a sha512 or the new sha3_512 hash [+]\n"
+		exit
+	elif (( $LENGTH-1 != 32 || $LENGTH-1 != 40 || $LENGTH-1 == 56 || $LENGTH-1 == 64 || $LENGTH-1 == 96 || $LENGTH-1 == 128 ))
+	then
+		echo -e "\n[-] User supplied a hash that is not a md5, sha1, sha224, sha256, sha384, sha512, sha3_224, sha3_256, sha3_384, sha3_512 hash [-]\n"
+		exit
+	fi
+}
+
+if (( $# < 1 ))
+then
+	usage
+fi
+
+if (( $# == 2 ))
+then
+ARGS="${@:2}"
+	
+	case $ARGS in
+	-md5|--md5hash)
+		md5hash="$2"
+		shift
+		shift
+		md5Finder
+		;;
+	-sha1|--sha1)
+		sha1="$2"
+		shift
+		shift
+		sha1Finder
+		;;
+	-sha224|--sha224)
+		sha224="$2"
+		shift
+		shift
+		sha224Finder
+		;;
+	-sha256|--sha256)
+		sha256="$2"
+		shift
+		shift
+		sha256Finder
+		;;
+	-sha384|--sha384)
+		sha384="$2"
+		shift
+		shift
+		sha384Finder
+		;;
+	-sha512|--sha512)
+		sha512="$2"
+		shift
+		shift
+		sha512Finder
+		;;
+		*)
+			usage
+		;;
+
+esac
+elif (( $# == 1 ))
+then
+hashLookup
+fi
