@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Author: Jason Brewer
+# Author: Jason B.
 # A bash program that looks up the hashes most used in forensics (along with a few additional ones) within a file
 # or returns a cryptographic hashing algorithm given a hash.
 
